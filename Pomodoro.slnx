@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="Client/Client.csproj" />
+  <Project Path="Pomodoro.Common/Pomodoro.Common.csproj" />
+  <Project Path="Pomodoro.DAL/Pomodoro.DAL.csproj" />
+  <Project Path="Server/Server.csproj" />
+</Solution>
