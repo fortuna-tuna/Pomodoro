@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Pomodoro.Common.Models
 {
-    internal class PomodoroSettingsDTO
+    public class PomodoroSettingsDTO
     {
         public int PomodoroDuration { get; set; }
         public int ShortBreak { get; set; }
