@@ -10,7 +10,7 @@ namespace Pomodoro.DAL
         public int TotalCompletePomodoros { get; set; }
         public DateTime Day { get; set; }
 
-        public int UserProfileId { get; set; }
+        public int? UserProfileId { get; set; }
         public UserProfile? UserProfile { get; set; }
     }
 }

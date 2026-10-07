@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Pomodoro.DAL
 {
-    internal class PomodoroDbContext: DbContext
+    public class PomodoroDbContext: DbContext
     {
         public DbSet<Statistic> Statistics { get; set; }
         public DbSet<UserProfile> UserProfiles { get; set; }
