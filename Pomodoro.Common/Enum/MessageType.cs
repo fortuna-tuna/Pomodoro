@@ -9,12 +9,14 @@ namespace Pomodoro.Common.Enum
         // Client
         StartPomodoro = 101,
         StopPomodoro = 102,
-        PausePomodoro = 103,
 
         // Server
-        TimerUpdated = 201,
-        ShowNotification = 202,
-        ErrorResponce = 203
+        ShowNotification = 201,
+        ErrorResponce = 202,
+
+        // Timer
+        TimerChangeState = 301,
+        TimerTick = 302,
 
     }
 }
