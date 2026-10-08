@@ -10,6 +10,7 @@ namespace Pomodoro.Common.Enum
         StartPomodoro = 101,
         StopPomodoro = 102,
         PausePomodoro = 103,
+        SaveSettings = 104,
 
         // Server
         TimerUpdated = 201,
