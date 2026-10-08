@@ -2,9 +2,10 @@
 {
     internal class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
-            Console.WriteLine("Hello, World!");
+            var server = new Server();
+            await server.StartServer("127.0.0.1", 1234);
         }
     }
 }

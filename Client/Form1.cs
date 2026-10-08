@@ -18,7 +18,7 @@ namespace Client
         {
             try
             {
-                
+
                 await _pomodoroClient.ConnectAsync("127.0.0.1", 5000);
                 if (lblStatus != null)
                     lblStatus.Text = "Статус: Підключено до сервера";
@@ -75,6 +75,11 @@ namespace Client
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             _pomodoroClient?.Disconnect();
+        }
+
+        private void btnSaveSettings_Click_1(object sender, EventArgs e)
+        {
+
         }
     }
 }

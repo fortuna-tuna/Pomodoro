@@ -17,7 +17,7 @@
 
         #region Windows Form Designer generated code
 
-        
+
         private void InitializeComponent()
         {
             btnStart = new Button();
@@ -82,6 +82,7 @@
             btnSaveSettings.TabIndex = 6;
             btnSaveSettings.Text = "Зберегти налаштування";
             btnSaveSettings.UseVisualStyleBackColor = true;
+            btnSaveSettings.Click += btnSaveSettings_Click_1;
             // 
             // lblStatus
             // 

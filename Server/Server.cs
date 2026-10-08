@@ -50,7 +50,7 @@ namespace Server
                     _ = Task.Run(() => ClientHandlerAsync(client, _cancellationTokenSource.Token));
                 } catch (Exception ex)
                 {
-                    // ...
+                    Console.WriteLine($"Connect error. {ex}");
                 }
             }
         }
@@ -73,9 +73,9 @@ namespace Server
                         await NetworkHelper.ReadExactAsync(stream, buf, 0, messageLength, token);
 
                         HandleIncomingMessage(NetworkSerializer.DeserializeMessage(buf));
-                    } catch
+                    } catch (Exception ex)
                     {
-                        // ...
+                        Console.WriteLine($"Client handler error. {ex}");
                     }
                     
                 }
@@ -148,6 +148,21 @@ namespace Server
             else
             {
                 await _timer.Start(TimerStates.Working);
+            }
+        }
+
+        private async Task SendNotificationAsync(string message)
+        {
+            try
+            {
+                var notificationDto = new NotificationDTO
+                {
+                    Type = MessageType.ShowNotification,
+                    NotificationText = message
+                };
+
+                var messageBytes = NetworkSerializer.SerializeMessage(notificationDto.Type, notificationDto);
+                // ...
             }
         }
     }
