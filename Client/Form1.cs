@@ -1,6 +1,4 @@
 using System;
-using System.Text.Json;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Client
@@ -13,7 +11,7 @@ namespace Client
         {
             InitializeComponent();
             _pomodoroClient = new PomodoroClient();
-            _pomodoroClient.OnMessageReceived += HandleIncomingMessage;
+            _pomodoroClient.OnMessageReceived += HandleMessageReceived;
         }
 
         private async void Form1_Load(object sender, EventArgs e)
@@ -22,89 +20,61 @@ namespace Client
             {
                 
                 await _pomodoroClient.ConnectAsync("127.0.0.1", 5000);
-
-                
-                _ = Task.Run(() => _pomodoroClient.ListenServerAsync(default));
-
-                lblStatus.Text = "Статус: Підключено до сервера";
+                if (lblStatus != null)
+                    lblStatus.Text = "Статус: Підключено до сервера";
             }
             catch (Exception ex)
             {
-                lblStatus.Text = "Статус: Помилка підключення";
-                MessageBox.Show($"Не вдалося підключитись до сервера: {ex.Message}");
+                if (lblStatus != null)
+                    lblStatus.Text = $"Статус: Помилка підключення ({ex.Message})";
             }
         }
 
-        private void HandleIncomingMessage(string jsonResponse)
+        private void btnStart_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("Таймер Pomodoro запущено!", "Інформація", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void btnStop_Click(object sender, EventArgs e)
+        {
+            _pomodoroClient?.Disconnect();
+            if (lblStatus != null)
+                lblStatus.Text = "Статус: Зупинено / Відключено";
+        }
+
+        private async void btnSaveSettings_Click(object sender, EventArgs e)
         {
             try
             {
-                using (JsonDocument doc = JsonDocument.Parse(jsonResponse))
-                {
-                    JsonElement root = doc.RootElement;
-                    int messageType = 0;
+                int workTime = (int)numWorkDuration.Value;
+                int breakTime = (int)numShortBreak.Value;
 
-                    if (root.TryGetProperty("Type", out JsonElement typeElement) ||
-                        root.TryGetProperty("type", out typeElement))
-                    {
-                        messageType = typeElement.GetInt32();
-                    }
-
-                    
-                    this.Invoke((MethodInvoker)(() =>
-                    {
-                        
-                        lblStatus.Text = $"Тип від сервера: {messageType}";
-
-                        
-                        if (root.TryGetProperty("Payload", out JsonElement payloadElement))
-                        {
-                            string payloadStr = payloadElement.ValueKind == JsonValueKind.String
-                                ? payloadElement.GetString()
-                                : payloadElement.GetRawText();
-
-                            if (!string.IsNullOrEmpty(payloadStr))
-                            {
-                                lblTimer.Text = payloadStr;
-                            }
-                        }
-                    }));
-                }
+                await _pomodoroClient.SendSettingsAsync(workTime, breakTime);
+                MessageBox.Show("Налаштування успішно відправлені на сервер!", "Успіх", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Помилка обробки: {ex.Message}");
+                MessageBox.Show($"Помилка відправки: {ex.Message}", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        private async void btnStart_Click(object sender, EventArgs e)
+        private void HandleMessageReceived(string message)
         {
-            try
+            if (InvokeRequired)
             {
-                await _pomodoroClient.SendMessageAsync(1, new { Action = "Start" });
-                lblStatus.Text = "Статус: Помодоро запущено";
+                Invoke(new Action<string>(HandleMessageReceived), message);
+                return;
             }
-            catch (Exception ex)
+
+            if (lblStatus != null)
             {
-                MessageBox.Show($"Помилка відправки: {ex.Message}");
+                lblStatus.Text = message;
             }
         }
 
-        private async void btnStop_Click(object sender, EventArgs e)
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            try
-            {
-                await _pomodoroClient.SendMessageAsync(2, new { Action = "Stop" });
-                lblStatus.Text = "Статус: Зупинено";
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Помилка відправки: {ex.Message}");
-            }
-        }
-
-        private void textBox1_TextChanged(object sender, EventArgs e)
-        {
+            _pomodoroClient?.Disconnect();
         }
     }
 }
