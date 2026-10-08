@@ -163,7 +163,9 @@ namespace Server
 
                 var messageBytes = NetworkSerializer.SerializeMessage(notificationDto.Type, notificationDto);
                 // ...
+            } catch (Exception ex)
+            {
+                Console.WriteLine($"Notification error. {ex}");
             }
-        }
     }
 }
