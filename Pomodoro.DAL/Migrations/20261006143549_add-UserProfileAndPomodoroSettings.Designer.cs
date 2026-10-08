@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Pomodoro.DAL;
 
@@ -11,9 +12,11 @@ using Pomodoro.DAL;
 namespace Pomodoro.DAL.Migrations
 {
     [DbContext(typeof(PomodoroDbContext))]
-    partial class PomodoroDbContextModelSnapshot : ModelSnapshot
+    [Migration("20261006143549_add-UserProfileAndPomodoroSettings")]
+    partial class addUserProfileAndPomodoroSettings
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -67,7 +70,7 @@ namespace Pomodoro.DAL.Migrations
                     b.Property<int>("TotalCompletePomodoros")
                         .HasColumnType("int");
 
-                    b.Property<int?>("UserProfileId")
+                    b.Property<int>("UserProfileId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -113,7 +116,9 @@ namespace Pomodoro.DAL.Migrations
                 {
                     b.HasOne("Pomodoro.DAL.UserProfile", "UserProfile")
                         .WithMany("Statistics")
-                        .HasForeignKey("UserProfileId");
+                        .HasForeignKey("UserProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("UserProfile");
                 });

@@ -4,10 +4,13 @@ using System.Text;
 
 namespace Pomodoro.DAL
 {
-    internal class Statistic
+    public class Statistic
     {
         public int Id { get; set; }
         public int TotalCompletePomodoros { get; set; }
         public DateTime Day { get; set; }
+
+        public int? UserProfileId { get; set; }
+        public UserProfile? UserProfile { get; set; }
     }
 }

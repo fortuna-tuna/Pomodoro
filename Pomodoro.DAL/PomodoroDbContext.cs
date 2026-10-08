@@ -6,9 +6,11 @@ using System.Text;
 
 namespace Pomodoro.DAL
 {
-    internal class PomodoroDbContext: DbContext
+    public class PomodoroDbContext: DbContext
     {
         public DbSet<Statistic> Statistics { get; set; }
+        public DbSet<UserProfile> UserProfiles { get; set; }
+        public DbSet<PomodoroSettings> PomodoroSettings { get; set; }
         public PomodoroDbContext() { }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

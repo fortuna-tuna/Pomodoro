@@ -13,9 +13,12 @@ namespace Pomodoro.Common.Enum
         SaveSettings = 104,
 
         // Server
-        TimerUpdated = 201,
-        ShowNotification = 202,
-        ErrorResponce = 203
+        ShowNotification = 201,
+        ErrorResponce = 202,
+
+        // Timer
+        TimerChangeState = 301,
+        TimerTick = 302,
 
     }
 }
