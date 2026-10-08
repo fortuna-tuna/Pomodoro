@@ -18,7 +18,6 @@ namespace Client
         {
             try
             {
-                
                 await _pomodoroClient.ConnectAsync("127.0.0.1", 5000);
                 if (lblStatus != null)
                     lblStatus.Text = "Статус: Підключено до сервера";
@@ -49,7 +48,9 @@ namespace Client
                 int workTime = (int)numWorkDuration.Value;
                 int breakTime = (int)numShortBreak.Value;
 
+                
                 await _pomodoroClient.SendSettingsAsync(workTime, breakTime);
+
                 MessageBox.Show("Налаштування успішно відправлені на сервер!", "Успіх", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)

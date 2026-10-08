@@ -17,7 +17,7 @@
 
         #region Windows Form Designer generated code
 
-        
+
         private void InitializeComponent()
         {
             btnStart = new Button();
@@ -27,13 +27,14 @@
             numShortBreak = new NumericUpDown();
             btnSaveSettings = new Button();
             lblStatus = new Label();
+            label1 = new Label();
             ((System.ComponentModel.ISupportInitialize)numWorkDuration).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numShortBreak).BeginInit();
             SuspendLayout();
             // 
             // btnStart
             // 
-            btnStart.Location = new Point(46, 45);
+            btnStart.Location = new Point(78, 104);
             btnStart.Name = "btnStart";
             btnStart.Size = new Size(94, 29);
             btnStart.TabIndex = 0;
@@ -43,7 +44,7 @@
             // 
             // btnStop
             // 
-            btnStop.Location = new Point(230, 45);
+            btnStop.Location = new Point(343, 104);
             btnStop.Name = "btnStop";
             btnStop.Size = new Size(94, 29);
             btnStop.TabIndex = 1;
@@ -54,7 +55,7 @@
             // lblTimer
             // 
             lblTimer.AutoSize = true;
-            lblTimer.Location = new Point(46, 159);
+            lblTimer.Location = new Point(78, 172);
             lblTimer.Name = "lblTimer";
             lblTimer.Size = new Size(44, 20);
             lblTimer.TabIndex = 3;
@@ -76,7 +77,7 @@
             // 
             // btnSaveSettings
             // 
-            btnSaveSettings.Location = new Point(387, 47);
+            btnSaveSettings.Location = new Point(500, 104);
             btnSaveSettings.Name = "btnSaveSettings";
             btnSaveSettings.Size = new Size(200, 29);
             btnSaveSettings.TabIndex = 6;
@@ -86,17 +87,28 @@
             // lblStatus
             // 
             lblStatus.AutoSize = true;
-            lblStatus.Location = new Point(46, 108);
+            lblStatus.Location = new Point(273, 69);
             lblStatus.Name = "lblStatus";
             lblStatus.Size = new Size(232, 20);
             lblStatus.TabIndex = 7;
             lblStatus.Text = "Статус: Очікування підключення";
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Font = new Font("Segoe UI", 26F);
+            label1.Location = new Point(326, 9);
+            label1.Name = "label1";
+            label1.Size = new Size(131, 60);
+            label1.TabIndex = 8;
+            label1.Text = "00:00";
             // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
+            Controls.Add(label1);
             Controls.Add(lblStatus);
             Controls.Add(btnSaveSettings);
             Controls.Add(numShortBreak);
@@ -121,5 +133,6 @@
         private NumericUpDown numShortBreak;
         private Button btnSaveSettings;
         private Label lblStatus;
+        private Label label1;
     }
 }
