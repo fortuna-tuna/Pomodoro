@@ -1,72 +1,42 @@
-﻿using System;
-using System.IO;
+﻿using Pomodoro.Common.Models;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Pomodoro.Common;
 
 namespace Client
 {
     public class PomodoroClient
     {
-        private TcpClient _tcpClient;
-        private NetworkStream _stream;
-        private bool _isConnected;
+        private readonly string _serverIp;
+        private readonly int _serverPort;
+        
+        private TcpClient _tcpClient = new TcpClient();
 
-        public event Action<string> OnMessageReceived;
-
-        public async Task ConnectAsync(string ipAddress, int port)
+        public PomodoroClient(string serverIp, int serverPort)
         {
-            _tcpClient = new TcpClient();
-            await _tcpClient.ConnectAsync(ipAddress, port);
-            _stream = _tcpClient.GetStream();
-            _isConnected = true;
-
-            _ = ListenAsync();
+            _serverIp = serverIp;
+            _serverPort = serverPort;
         }
 
-        private async Task ListenAsync()
+        public async Task SendNetworkMessageAsync(NetworkMessage message)
         {
-            try
+            if (_tcpClient == null || !_tcpClient.Connected)
             {
-                byte[] buffer = new byte[1024];
-                while (_isConnected)
-                {
-                    int bytesRead = await _stream.ReadAsync(buffer, 0, buffer.Length);
-                    if (bytesRead == 0) break;
-
-                    string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                    OnMessageReceived?.Invoke(message);
-                }
+                _tcpClient = new TcpClient();
+                await _tcpClient.ConnectAsync(_serverIp, _serverPort);
             }
-            catch (Exception ex)
-            {
-                OnMessageReceived?.Invoke($"Помилка з'єднання: {ex.Message}");
-            }
-        }
 
-        public async Task SendSettingsAsync(int workDuration, int shortBreak)
-        {
-            if (_stream == null) return;
+            
+            string jsonMessage = JsonSerializer.Serialize(message);
+            byte[] data = Encoding.UTF8.GetBytes(jsonMessage);
 
-            var request = new
-            {
-                Command = "UpdateSettings",
-                WorkDuration = workDuration,
-                ShortBreakDuration = shortBreak
-            };
+            NetworkStream stream = _tcpClient.GetStream();
 
-            string json = JsonSerializer.Serialize(request);
-            byte[] data = Encoding.UTF8.GetBytes(json);
-
-            await _stream.WriteAsync(data, 0, data.Length);
-        }
-
-        public void Disconnect()
-        {
-            _isConnected = false;
-            _stream?.Close();
-            _tcpClient?.Close();
+            
+            await stream.WriteAsync(data, 0, data.Length);
+            await stream.FlushAsync();
         }
     }
 }
