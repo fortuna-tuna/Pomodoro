@@ -88,6 +88,7 @@
             btnSaveSettings.TabIndex = 6;
             btnSaveSettings.Text = "Зберегти налаштування";
             btnSaveSettings.UseVisualStyleBackColor = true;
+            btnSaveSettings.Click += btnSaveSettings_Click_1;
             // 
             // lblStatus
             // 

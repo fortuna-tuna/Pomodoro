@@ -40,6 +40,10 @@ namespace Client
 
                 await _client.SendNetworkMessageAsync(message);
                 lblStatus.Text = "Статус: Надіслано запит на старт";
+
+                await _pomodoroClient.ConnectAsync("127.0.0.1", 5000);
+                if (lblStatus != null)
+                    lblStatus.Text = "Статус: Підключено до сервера";
             }
             catch (Exception ex)
             {
@@ -92,6 +96,16 @@ namespace Client
             {
                 MessageBox.Show($"Помилка збереження: {ex.Message}", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            _pomodoroClient?.Disconnect();
+        }
+
+        private void btnSaveSettings_Click_1(object sender, EventArgs e)
+        {
+
         }
     }
 }
