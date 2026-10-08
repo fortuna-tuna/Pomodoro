@@ -3,73 +3,70 @@ using System.IO;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Client
 {
     public class PomodoroClient
     {
-        private TcpClient? _tcpClient;
-        private NetworkStream? _stream;
-        public event Action<string>? OnMessageReceived;
+        private TcpClient _tcpClient;
+        private NetworkStream _stream;
+        private bool _isConnected;
 
-        public async Task ConnectAsync(string ip, int port)
+        public event Action<string> OnMessageReceived;
+
+        public async Task ConnectAsync(string ipAddress, int port)
         {
             _tcpClient = new TcpClient();
-            await _tcpClient.ConnectAsync(ip, port);
+            await _tcpClient.ConnectAsync(ipAddress, port);
             _stream = _tcpClient.GetStream();
+            _isConnected = true;
+
+            _ = ListenAsync();
         }
 
-        public async Task SendMessageAsync<T>(int messageType, T payloadObject)
+        private async Task ListenAsync()
+        {
+            try
+            {
+                byte[] buffer = new byte[1024];
+                while (_isConnected)
+                {
+                    int bytesRead = await _stream.ReadAsync(buffer, 0, buffer.Length);
+                    if (bytesRead == 0) break;
+
+                    string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                    OnMessageReceived?.Invoke(message);
+                }
+            }
+            catch (Exception ex)
+            {
+                OnMessageReceived?.Invoke($"Помилка з'єднання: {ex.Message}");
+            }
+        }
+
+        public async Task SendSettingsAsync(int workDuration, int shortBreak)
         {
             if (_stream == null) return;
 
-            string payloadJson = JsonSerializer.Serialize(payloadObject);
-
-            var message = new
+            var request = new
             {
-                Type = messageType,
-                Payload = payloadJson
+                Command = "UpdateSettings",
+                WorkDuration = workDuration,
+                ShortBreakDuration = shortBreak
             };
 
-            byte[] payloadBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message));
-            byte[] lengthPrefix = BitConverter.GetBytes(payloadBytes.Length);
+            string json = JsonSerializer.Serialize(request);
+            byte[] data = Encoding.UTF8.GetBytes(json);
 
-            await _stream.WriteAsync(lengthPrefix, 0, lengthPrefix.Length);
-            await _stream.WriteAsync(payloadBytes, 0, payloadBytes.Length);
+            await _stream.WriteAsync(data, 0, data.Length);
         }
 
-        public async Task ListenServerAsync(CancellationToken ct)
+        public void Disconnect()
         {
-            if (_stream == null) return;
-
-            byte[] lengthBuffer = new byte[4];
-
-            while (!ct.IsCancellationRequested)
-            {
-                int bytesRead = await ReadExactAsync(_stream, lengthBuffer, 0, 4, ct);
-                if (bytesRead < 4) break;
-
-                int messageLength = BitConverter.ToInt32(lengthBuffer, 0);
-                byte[] payloadBuffer = new byte[messageLength];
-                await ReadExactAsync(_stream, payloadBuffer, 0, messageLength, ct);
-
-                string json = Encoding.UTF8.GetString(payloadBuffer);
-                OnMessageReceived?.Invoke(json);
-            }
-        }
-
-        private async Task<int> ReadExactAsync(NetworkStream stream, byte[] buffer, int offset, int count, CancellationToken ct)
-        {
-            int totalRead = 0;
-            while (totalRead < count)
-            {
-                int read = await stream.ReadAsync(buffer, offset + totalRead, count - totalRead, ct);
-                if (read == 0) break;
-                totalRead += read;
-            }
-            return totalRead;
+            _isConnected = false;
+            _stream?.Close();
+            _tcpClient?.Close();
         }
     }
 }
