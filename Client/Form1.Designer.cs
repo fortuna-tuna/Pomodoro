@@ -29,8 +29,14 @@
             lblStatus = new Label();
             label1 = new Label();
             label2 = new Label();
+            numLongBreak = new NumericUpDown();
+            numSessions = new NumericUpDown();
+            label3 = new Label();
+            label4 = new Label();
             ((System.ComponentModel.ISupportInitialize)numWorkDuration).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numShortBreak).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numLongBreak).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numSessions).BeginInit();
             SuspendLayout();
             // 
             // btnStart
@@ -41,7 +47,7 @@
             btnStart.TabIndex = 0;
             btnStart.Text = "Старт";
             btnStart.UseVisualStyleBackColor = true;
-            btnStart.Click += btnStart_Click_1;
+            this.btnStart.Click += new System.EventHandler(this.btnStart_Click);
             // 
             // btnStop
             // 
@@ -65,7 +71,7 @@
             // 
             // numWorkDuration
             // 
-            numWorkDuration.Location = new Point(102, 242);
+            numWorkDuration.Location = new Point(91, 242);
             numWorkDuration.Name = "numWorkDuration";
             numWorkDuration.Size = new Size(150, 27);
             numWorkDuration.TabIndex = 4;
@@ -114,11 +120,47 @@
             label2.TabIndex = 9;
             label2.Text = "Коротка пауза (хв)";
             // 
+            // numLongBreak
+            // 
+            numLongBreak.Location = new Point(95, 329);
+            numLongBreak.Name = "numLongBreak";
+            numLongBreak.Size = new Size(150, 27);
+            numLongBreak.TabIndex = 10;
+            // 
+            // numSessions
+            // 
+            numSessions.Location = new Point(495, 329);
+            numSessions.Name = "numSessions";
+            numSessions.Size = new Size(150, 27);
+            numSessions.TabIndex = 11;
+            // 
+            // label3
+            // 
+            label3.AutoSize = true;
+            label3.Location = new Point(96, 376);
+            label3.Name = "label3";
+            label3.Size = new Size(122, 20);
+            label3.TabIndex = 12;
+            label3.Text = "Довга пауза (хв)";
+            // 
+            // label4
+            // 
+            label4.AutoSize = true;
+            label4.Location = new Point(492, 371);
+            label4.Name = "label4";
+            label4.Size = new Size(159, 20);
+            label4.TabIndex = 13;
+            label4.Text = "Сесій до довгої паузи";
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
+            Controls.Add(label4);
+            Controls.Add(label3);
+            Controls.Add(numSessions);
+            Controls.Add(numLongBreak);
             Controls.Add(label2);
             Controls.Add(label1);
             Controls.Add(lblStatus);
@@ -132,6 +174,8 @@
             Text = "Client";
             ((System.ComponentModel.ISupportInitialize)numWorkDuration).EndInit();
             ((System.ComponentModel.ISupportInitialize)numShortBreak).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numLongBreak).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numSessions).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -147,5 +191,9 @@
         private Label lblStatus;
         private Label label1;
         private Label label2;
+        private NumericUpDown numLongBreak;
+        private NumericUpDown numSessions;
+        private Label label3;
+        private Label label4;
     }
 }
