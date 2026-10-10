@@ -65,7 +65,8 @@ namespace Client
         {
             int minutes = totalSeconds / 60;
             int seconds = totalSeconds % 60;
-            lblStatus.Text = $"Час: {minutes:D2}:{seconds:D2}";
+
+            Invoke(() => lblTimer.Text = $"{minutes}:{seconds}");
         }
 
         private async void btnStart_Click(object sender, EventArgs e)
@@ -115,10 +116,5 @@ namespace Client
                 MessageBox.Show($"Помилка збереження: {ex.Message}", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
-        
-        private void btnStart_Click_1(object sender, EventArgs e) => btnStart_Click(sender, e);
-        private void btnStop_Click_1(object sender, EventArgs e) => btnStop_Click(sender, e);
-        private void btnSaveSettings_Click_1(object sender, EventArgs e) => btnSaveSettings_Click(sender, e);
     }
 }
