@@ -27,57 +27,59 @@
             numShortBreak = new NumericUpDown();
             btnSaveSettings = new Button();
             lblStatus = new Label();
+            label1 = new Label();
+            label2 = new Label();
             ((System.ComponentModel.ISupportInitialize)numWorkDuration).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numShortBreak).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)numPomodoroCount).BeginInit();
             SuspendLayout();
             // 
             // btnStart
             // 
-            btnStart.Location = new Point(46, 45);
+            btnStart.Location = new Point(78, 129);
             btnStart.Name = "btnStart";
             btnStart.Size = new Size(94, 29);
             btnStart.TabIndex = 0;
             btnStart.Text = "Старт";
             btnStart.UseVisualStyleBackColor = true;
-            btnStart.Click += btnStart_Click;
+            btnStart.Click += btnStart_Click_1;
             // 
             // btnStop
             // 
-            btnStop.Location = new Point(230, 45);
+            btnStop.Location = new Point(330, 129);
             btnStop.Name = "btnStop";
             btnStop.Size = new Size(94, 29);
             btnStop.TabIndex = 1;
             btnStop.Text = "Стоп";
             btnStop.UseVisualStyleBackColor = true;
-            btnStop.Click += btnStop_Click;
+            btnStop.Click += btnStop_Click_1;
             // 
             // lblTimer
             // 
             lblTimer.AutoSize = true;
-            lblTimer.Location = new Point(46, 159);
+            lblTimer.Font = new Font("Segoe UI", 28F);
+            lblTimer.Location = new Point(330, 9);
             lblTimer.Name = "lblTimer";
-            lblTimer.Size = new Size(131, 60);
+            lblTimer.Size = new Size(137, 62);
             lblTimer.TabIndex = 3;
             lblTimer.Text = "00:00";
             // 
             // numWorkDuration
             // 
-            numWorkDuration.Location = new Point(55, 242);
+            numWorkDuration.Location = new Point(102, 242);
             numWorkDuration.Name = "numWorkDuration";
             numWorkDuration.Size = new Size(150, 27);
             numWorkDuration.TabIndex = 4;
             // 
             // numShortBreak
             // 
-            numShortBreak.Location = new Point(302, 242);
+            numShortBreak.Location = new Point(495, 242);
             numShortBreak.Name = "numShortBreak";
             numShortBreak.Size = new Size(150, 27);
             numShortBreak.TabIndex = 5;
             // 
             // btnSaveSettings
             // 
-            btnSaveSettings.Location = new Point(387, 47);
+            btnSaveSettings.Location = new Point(536, 129);
             btnSaveSettings.Name = "btnSaveSettings";
             btnSaveSettings.Size = new Size(200, 29);
             btnSaveSettings.TabIndex = 6;
@@ -88,17 +90,37 @@
             // lblStatus
             // 
             lblStatus.AutoSize = true;
-            lblStatus.Location = new Point(46, 108);
+            lblStatus.Location = new Point(282, 71);
             lblStatus.Name = "lblStatus";
             lblStatus.Size = new Size(232, 20);
             lblStatus.TabIndex = 7;
             lblStatus.Text = "Статус: Очікування підключення";
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Location = new Point(102, 284);
+            label1.Name = "label1";
+            label1.Size = new Size(87, 20);
+            label1.TabIndex = 8;
+            label1.Text = "Робота (хв)";
+            // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.Location = new Point(495, 284);
+            label2.Name = "label2";
+            label2.Size = new Size(138, 20);
+            label2.TabIndex = 9;
+            label2.Text = "Коротка пауза (хв)";
             // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
+            Controls.Add(label2);
+            Controls.Add(label1);
             Controls.Add(lblStatus);
             Controls.Add(btnSaveSettings);
             Controls.Add(numShortBreak);
@@ -110,7 +132,6 @@
             Text = "Client";
             ((System.ComponentModel.ISupportInitialize)numWorkDuration).EndInit();
             ((System.ComponentModel.ISupportInitialize)numShortBreak).EndInit();
-            ((System.ComponentModel.ISupportInitialize)numPomodoroCount).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -124,5 +145,7 @@
         private NumericUpDown numShortBreak;
         private Button btnSaveSettings;
         private Label lblStatus;
+        private Label label1;
+        private Label label2;
     }
 }

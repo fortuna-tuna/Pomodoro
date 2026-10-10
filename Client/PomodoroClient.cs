@@ -1,32 +1,39 @@
-﻿using System;
+﻿using Pomodoro.Common.Enum;
+using Pomodoro.Common.Models;
+using Pomodoro.Common.Helpers;
+using System;
 using System.IO;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
-using Pomodoro.Common;
 
 namespace Client
 {
     public class PomodoroClient
     {
-        private TcpClient _tcpClient;
-        private NetworkStream _stream;
+        private TcpClient? _tcpClient;
+        private NetworkStream? _stream;
         private bool _isConnected;
 
-        public event Action<string> OnMessageReceived;
+        public event Action<string>? OnMessageReceived;
 
-        public PomodoroClient(string serverIp, int serverPort)
+        public async Task ConnectAsync(string ipAddress, int port)
         {
-            _serverIp = serverIp;
-            _serverPort = serverPort;
+            _tcpClient = new TcpClient();
+            await _tcpClient.ConnectAsync(ipAddress, port);
+            _stream = _tcpClient.GetStream();
+            _isConnected = true;
+
+            _ = ListenAsync();
         }
 
-        public async Task SendNetworkMessageAsync(NetworkMessage message)
+        private async Task ListenAsync()
         {
-            if (_tcpClient == null || !_tcpClient.Connected)
+            try
             {
                 byte[] buffer = new byte[1024];
-                while (_isConnected)
+                while (_isConnected && _stream != null)
                 {
                     int bytesRead = await _stream.ReadAsync(buffer, 0, buffer.Length);
                     if (bytesRead == 0) break;
@@ -41,21 +48,26 @@ namespace Client
             }
         }
 
-        public async Task SendSettingsAsync(int workDuration, int shortBreak)
+        public async Task SendSettingsAsync(int workTime, int breakTime)
         {
-            if (_stream == null) return;
-
-            var request = new
+            var settingsDto = new PomodoroSettingsDTO
             {
-                Command = "UpdateSettings",
-                WorkDuration = workDuration,
-                ShortBreakDuration = shortBreak
+                PomodoroDuration = workTime,
+                ShortBreak = breakTime
             };
 
-            string json = JsonSerializer.Serialize(request);
-            byte[] data = Encoding.UTF8.GetBytes(json);
+            
+            byte[] messageBytes = NetworkSerializer.SerializeMessage(MessageType.StartPomodoro, settingsDto);
 
-            await _stream.WriteAsync(data, 0, data.Length);
+            
+            byte[] messageLength = BitConverter.GetBytes(IPAddress.HostToNetworkOrder(messageBytes.Length));
+
+            if (_stream == null || !_isConnected)
+                throw new InvalidOperationException("Клієнт не підключений до сервера.");
+
+            
+            await _stream.WriteAsync(messageLength, 0, messageLength.Length);
+            await _stream.WriteAsync(messageBytes, 0, messageBytes.Length);
         }
 
         public void Disconnect()

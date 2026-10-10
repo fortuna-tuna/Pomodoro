@@ -12,7 +12,7 @@ namespace Pomodoro.Common.Enum
         PausePomodoro = 103,
         SaveSettings = 104,
 
-        SaveSettings = 103,
+        
         // Server
         ShowNotification = 201,
         ErrorResponce = 202,
