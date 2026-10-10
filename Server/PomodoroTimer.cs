@@ -75,7 +75,7 @@ namespace Server
             }
             catch (Exception ex)
             {
-                //...
+                Console.WriteLine($"Timer error. {ex.Message}");
             }
             finally
             {
@@ -85,10 +85,16 @@ namespace Server
 
         public void Stop()
         {
-            _cancellationTokenSource.Cancel();
-            _cancellationTokenSource.Dispose();
-            _cancellationTokenSource = null;
-            IsRunning = false;
+            try
+            {
+                _cancellationTokenSource?.Cancel();
+                _cancellationTokenSource?.Dispose();
+            }
+            finally
+            {
+                _cancellationTokenSource = null;
+                IsRunning = false;
+            }
         }
 
         public void UpdateSettings(PomodoroSettingsDTO newSettings)
