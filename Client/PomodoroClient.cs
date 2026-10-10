@@ -1,38 +1,32 @@
-﻿using Pomodoro.Common.Enum;
-using Pomodoro.Common.Models;
-using Pomodoro.Common.Helpers;
-using System;
+﻿using System;
 using System.IO;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using Pomodoro.Common;
 
 namespace Client
 {
     public class PomodoroClient
     {
-        private TcpClient? _tcpClient;
-        private NetworkStream? _stream;
+        private TcpClient _tcpClient;
+        private NetworkStream _stream;
         private bool _isConnected;
 
-        public event Action<string>? OnMessageReceived;
+        public event Action<string> OnMessageReceived;
 
-        public async Task ConnectAsync(string ipAddress, int port)
+        public PomodoroClient(string serverIp, int serverPort)
         {
-            _tcpClient = new TcpClient();
-            await _tcpClient.ConnectAsync(ipAddress, port);
-            _stream = _tcpClient.GetStream();
-            _isConnected = true;
-
-            _ = ListenAsync();
+            _serverIp = serverIp;
+            _serverPort = serverPort;
         }
 
-        private async Task ListenAsync()
+        public async Task SendNetworkMessageAsync(NetworkMessage message)
         {
-            try
+            if (_tcpClient == null || !_tcpClient.Connected)
             {
                 byte[] buffer = new byte[1024];
-                while (_isConnected && _stream != null)
+                while (_isConnected)
                 {
                     int bytesRead = await _stream.ReadAsync(buffer, 0, buffer.Length);
                     if (bytesRead == 0) break;
@@ -47,21 +41,20 @@ namespace Client
             }
         }
 
-        public async Task SendSettingsAsync(int workTime, int breakTime)
+        public async Task SendSettingsAsync(int workDuration, int shortBreak)
         {
-            var settingsDto = new PomodoroSettingsDTO
+            if (_stream == null) return;
+
+            var request = new
             {
-                PomodoroDuration = workTime,
-                ShortBreak = breakTime
+                Command = "UpdateSettings",
+                WorkDuration = workDuration,
+                ShortBreakDuration = shortBreak
             };
 
-            
-            byte[] data = NetworkSerializer.SerializeMessage(MessageType.SaveSettings, settingsDto);
+            string json = JsonSerializer.Serialize(request);
+            byte[] data = Encoding.UTF8.GetBytes(json);
 
-            if (_stream == null || !_isConnected)
-                throw new InvalidOperationException("Клієнт не підключений до сервера.");
-
-            
             await _stream.WriteAsync(data, 0, data.Length);
         }
 

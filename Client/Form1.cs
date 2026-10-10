@@ -1,81 +1,95 @@
 using System;
+using System.Text.Json;
 using System.Windows.Forms;
+using Pomodoro.Common.Enum;
+using Pomodoro.Common.Models;
+
+
 
 namespace Client
 {
     public partial class Form1 : Form
     {
-        private PomodoroClient _pomodoroClient;
+        private readonly PomodoroClient _client;
 
         public Form1()
         {
             InitializeComponent();
-            _pomodoroClient = new PomodoroClient();
-            _pomodoroClient.OnMessageReceived += HandleMessageReceived;
+
+            
+            _client = new PomodoroClient("127.0.0.1", 5000);
         }
 
-        private async void Form1_Load(object sender, EventArgs e)
+        private async void btnStart_Click(object sender, EventArgs e)
         {
             try
             {
+                
                 await _pomodoroClient.ConnectAsync("127.0.0.1", 5000);
                 if (lblStatus != null)
                     lblStatus.Text = "Статус: Підключено до сервера";
             }
             catch (Exception ex)
             {
-                if (lblStatus != null)
-                    lblStatus.Text = $"Статус: Помилка підключення ({ex.Message})";
+                MessageBox.Show($"Помилка: {ex.Message}", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        private void btnStart_Click(object sender, EventArgs e)
+        private async void btnStop_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Таймер Pomodoro запущено!", "Інформація", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
+            try
+            {
+                var message = new NetworkMessage
+                {
+                    Type = MessageType.StopPomodoro,
+                    Payload = string.Empty
+                };
 
-        private void btnStop_Click(object sender, EventArgs e)
-        {
-            _pomodoroClient?.Disconnect();
-            if (lblStatus != null)
-                lblStatus.Text = "Статус: Зупинено / Відключено";
+                await _client.SendNetworkMessageAsync(message);
+                lblStatus.Text = "Статус: Таймер зупинено";
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Помилка: {ex.Message}", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private async void btnSaveSettings_Click(object sender, EventArgs e)
         {
             try
             {
-                int workTime = (int)numWorkDuration.Value;
-                int breakTime = (int)numShortBreak.Value;
+                var settingsDto = new PomodoroSettingsDTO
+                {
+                    PomodoroDuration = (int)numWorkDuration.Value,
+                    ShortBreak = (int)numShortBreak.Value,
+                    CountPomodoroBeforeLongBreak = (int)numPomodoroCount.Value
+                };
 
-                
+                string payloadJson = JsonSerializer.Serialize(settingsDto);
+
+                var message = new NetworkMessage
+                {
+                    Type = MessageType.SaveSettings,
+                    Payload = payloadJson
+                };
+
                 await _pomodoroClient.SendSettingsAsync(workTime, breakTime);
-
                 MessageBox.Show("Налаштування успішно відправлені на сервер!", "Успіх", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Помилка відправки: {ex.Message}", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        private void HandleMessageReceived(string message)
-        {
-            if (InvokeRequired)
-            {
-                Invoke(new Action<string>(HandleMessageReceived), message);
-                return;
-            }
-
-            if (lblStatus != null)
-            {
-                lblStatus.Text = message;
+                MessageBox.Show($"Помилка збереження: {ex.Message}", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             _pomodoroClient?.Disconnect();
+        }
+
+        private void btnSaveSettings_Click_1(object sender, EventArgs e)
+        {
+
         }
     }
 }

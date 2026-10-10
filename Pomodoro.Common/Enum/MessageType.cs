@@ -9,6 +9,8 @@ namespace Pomodoro.Common.Enum
         // Client
         StartPomodoro = 101,
         StopPomodoro = 102,
+        PausePomodoro = 103,
+        SaveSettings = 104,
 
         SaveSettings = 103,
         // Server
