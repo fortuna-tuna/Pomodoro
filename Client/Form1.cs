@@ -33,12 +33,18 @@ namespace Client
             };
         }
 
-        private async Task ConnectToServerAsync()
-        {
-            try
-            {
-                await _pomodoroClient.ConnectAsync("127.0.0.1", 1234);
-                lblStatus.Text = "Статус: Підключено до сервера";
+                var message = new NetworkMessage
+                {
+                    Type = MessageType.StartPomodoro,
+                    Payload = payloadJson
+                };
+
+                await _client.SendNetworkMessageAsync(message);
+                lblStatus.Text = "Статус: Надіслано запит на старт";
+
+                await _pomodoroClient.ConnectAsync("127.0.0.1", 5000);
+                if (lblStatus != null)
+                    lblStatus.Text = "Статус: Підключено до сервера";
             }
             catch (Exception)
             {
@@ -110,7 +116,7 @@ namespace Client
 
         private void btnStop_Click_1(object sender, EventArgs e)
         {
-
+            _pomodoroClient?.Disconnect();
         }
 
         private void btnSaveSettings_Click_1(object sender, EventArgs e)

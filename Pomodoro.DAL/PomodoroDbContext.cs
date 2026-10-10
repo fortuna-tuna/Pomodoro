@@ -22,5 +22,12 @@ namespace Pomodoro.DAL
             optionsBuilder.UseSqlServer(config.GetConnectionString("SqlClient"));
             base.OnConfiguring(optionsBuilder);
         }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<UserProfile>().HasIndex(u => u.Login).IsUnique();
+        }
     }
 }

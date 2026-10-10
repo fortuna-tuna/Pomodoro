@@ -11,6 +11,7 @@ namespace Pomodoro.Common.Enum
         StopPomodoro = 102,
         PausePomodoro = 103,
         SaveSettings = 104,
+        GetSettings = 105,
 
         
         // Server
