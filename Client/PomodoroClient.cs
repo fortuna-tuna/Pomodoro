@@ -3,10 +3,10 @@ using Pomodoro.Common.Models;
 using Pomodoro.Common.Helpers;
 using System;
 using System.IO;
-using System.Net;
 using System.Net.Sockets;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace Client
 {
@@ -15,8 +15,12 @@ namespace Client
         private TcpClient? _tcpClient;
         private NetworkStream? _stream;
         private bool _isConnected;
+        private CancellationTokenSource? _cts;
 
         public event Action<string>? OnMessageReceived;
+        public event Action<int>? OnTick;
+        public event Action<string>? OnTimerStateChanged;
+        public event Action<string>? OnNotificationReceived;
 
         public async Task ConnectAsync(string ipAddress, int port)
         {
@@ -24,55 +28,87 @@ namespace Client
             await _tcpClient.ConnectAsync(ipAddress, port);
             _stream = _tcpClient.GetStream();
             _isConnected = true;
+            _cts = new CancellationTokenSource();
 
-            _ = ListenAsync();
+            _ = ListenAsync(_cts.Token);
         }
 
-        private async Task ListenAsync()
+        private async Task ListenAsync(CancellationToken token)
         {
             try
             {
-                byte[] buffer = new byte[1024];
-                while (_isConnected && _stream != null)
+                while (_isConnected && _stream != null && !token.IsCancellationRequested)
                 {
-                    int bytesRead = await _stream.ReadAsync(buffer, 0, buffer.Length);
-                    if (bytesRead == 0) break;
+                    var buf = await NetworkHelper.ReadDataAsync(_stream, token);
+                    if (buf == null) break;
 
-                    string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                    OnMessageReceived?.Invoke(message);
+                    var networkMessage = NetworkSerializer.DeserializeMessage(buf);
+                    if (networkMessage != null)
+                    {
+                        await HandleIncomingMessage(networkMessage);
+                    }
                 }
             }
             catch (Exception ex)
             {
-                OnMessageReceived?.Invoke($"Помилка з'єднання: {ex.Message}");
+                if (!token.IsCancellationRequested)
+                {
+                    OnMessageReceived?.Invoke($"Помилка з'єднання: {ex.Message}");
+                }
             }
         }
 
-        public async Task SendSettingsAsync(int workTime, int breakTime)
+        private Task HandleIncomingMessage(NetworkMessage message)
+        {
+            switch (message.Type)
+            {
+                case MessageType.ShowNotification:
+                    OnNotificationReceived?.Invoke(message.Payload);
+                    MessageBox.Show(message.Payload, "Сповіщення сервера", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    break;
+
+                case MessageType.ErrorResponce:
+                    OnMessageReceived?.Invoke($"Помилка від сервера: {message.Payload}");
+                    break;
+
+                case MessageType.TimerChangeState:
+                    OnTimerStateChanged?.Invoke(message.Payload);
+                    break;
+
+                case MessageType.TimerTick:
+                    if (int.TryParse(message.Payload, out int remainingSeconds))
+                    {
+                        OnTick?.Invoke(remainingSeconds);
+                    }
+                    break;
+
+                default:
+                    OnMessageReceived?.Invoke($"Отримано невідомий тип повідомлення: {message.Payload}");
+                    break;
+            }
+
+            return Task.CompletedTask;
+        }
+
+        public async Task SendSettingsAsync(int pomodoroDuration, int shortBreak, int longBreak, int sessions)
         {
             var settingsDto = new PomodoroSettingsDTO
             {
-                PomodoroDuration = workTime,
-                ShortBreak = breakTime
+                PomodoroDuration = pomodoroDuration,
+                ShortBreak = shortBreak,
+                LongBreak = longBreak
             };
-
-            
-            byte[] messageBytes = NetworkSerializer.SerializeMessage(MessageType.StartPomodoro, settingsDto);
-
-            
-            byte[] messageLength = BitConverter.GetBytes(IPAddress.HostToNetworkOrder(messageBytes.Length));
 
             if (_stream == null || !_isConnected)
                 throw new InvalidOperationException("Клієнт не підключений до сервера.");
 
-            
-            await _stream.WriteAsync(messageLength, 0, messageLength.Length);
-            await _stream.WriteAsync(messageBytes, 0, messageBytes.Length);
+            await NetworkHelper.WriteExactAsync(_stream, MessageType.StartPomodoro, settingsDto);
         }
 
         public void Disconnect()
         {
             _isConnected = false;
+            _cts?.Cancel();
             _stream?.Close();
             _tcpClient?.Close();
         }
