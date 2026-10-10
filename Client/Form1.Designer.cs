@@ -41,7 +41,6 @@
             btnStart.TabIndex = 0;
             btnStart.Text = "Старт";
             btnStart.UseVisualStyleBackColor = true;
-            btnStart.Click += btnStart_Click_1;
             // 
             // btnStop
             // 
@@ -51,7 +50,6 @@
             btnStop.TabIndex = 1;
             btnStop.Text = "Стоп";
             btnStop.UseVisualStyleBackColor = true;
-            btnStop.Click += btnStop_Click_1;
             // 
             // lblTimer
             // 
@@ -85,7 +83,6 @@
             btnSaveSettings.TabIndex = 6;
             btnSaveSettings.Text = "Зберегти налаштування";
             btnSaveSettings.UseVisualStyleBackColor = true;
-            btnSaveSettings.Click += btnSaveSettings_Click_1;
             // 
             // lblStatus
             // 
