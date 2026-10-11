@@ -17,6 +17,7 @@ namespace Client
         private bool _isConnected;
         private CancellationTokenSource? _cts;
 
+        
         public event Action<string>? OnMessageReceived;
         public event Action<int>? OnTick;
         public event Action<string>? OnTimerStateChanged;
@@ -68,7 +69,6 @@ namespace Client
                 case MessageType.ShowNotification:
                     string notif = message.Payload ?? string.Empty;
                     OnNotificationReceived?.Invoke(notif);
-                    MessageBox.Show(notif, "Сповіщення сервера", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     break;
 
                 case MessageType.ErrorResponce:
@@ -81,12 +81,14 @@ namespace Client
                     break;
 
                 case MessageType.TimerTick:
-                    var res = NetworkSerializer.DeserializePayload<TimerTickDTO>(message.Payload);
-                    OnTick?.Invoke(res.RemainingSeconds);
+                    if (int.TryParse(message.Payload, out int remainingSeconds))
+                    {
+                        OnTick?.Invoke(remainingSeconds);
+                    }
                     break;
 
                 default:
-                    OnMessageReceived?.Invoke($"Отримано невідомий тип повідомлення: {message.Payload}");
+                    OnMessageReceived?.Invoke($"Отримано невідомий тип повідомлення від сервера: {message.Payload}");
                     break;
             }
 
@@ -131,8 +133,7 @@ namespace Client
                 LongBreak = longBreak
             };
 
-            
-            await NetworkHelper.WriteExactAsync(_stream!, MessageType.SaveSettings, settingsDto);
+            await NetworkHelper.WriteExactAsync(_stream!, MessageType.StartPomodoro, settingsDto);
         }
 
         public void Disconnect()
