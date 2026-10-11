@@ -14,10 +14,12 @@ namespace Client
 
             _pomodoroClient = new PomodoroClient();
 
+            
             _pomodoroClient.OnMessageReceived += (message) => {
                 UpdateStatus(message);
             };
 
+            
             _pomodoroClient.OnTick += (remainingSeconds) => {
                 if (this.InvokeRequired)
                 {
@@ -29,8 +31,21 @@ namespace Client
                 }
             };
 
+            
             _pomodoroClient.OnTimerStateChanged += (state) => {
                 UpdateStatus($"Стан: {state}");
+            };
+
+            
+            _pomodoroClient.OnNotificationReceived += (notification) => {
+                if (this.InvokeRequired)
+                {
+                    this.Invoke(new Action(() => MessageBox.Show(notification, "Сповіщення сервера", MessageBoxButtons.OK, MessageBoxIcon.Information)));
+                }
+                else
+                {
+                    MessageBox.Show(notification, "Сповіщення сервера", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
             };
 
             _ = ConnectToServerAsync();
@@ -65,8 +80,7 @@ namespace Client
         {
             int minutes = totalSeconds / 60;
             int seconds = totalSeconds % 60;
-
-            Invoke(() => lblTimer.Text = $"{minutes}:{seconds}");
+            lblStatus.Text = $"Час: {minutes:D2}:{seconds:D2}";
         }
 
         private async void btnStart_Click(object sender, EventArgs e)
@@ -108,8 +122,9 @@ namespace Client
                 int longBreak = (int)numLongBreak.Value;
                 int sessions = (int)numSessions.Value;
 
+                
                 await _pomodoroClient.SaveSettingsAsync(workTime, shortBreak, longBreak, sessions);
-                MessageBox.Show("Налаштування успішно збережено на сервері!", "Успіх", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                UpdateStatus("Статус: Налаштування надіслано на сервер");
             }
             catch (Exception ex)
             {

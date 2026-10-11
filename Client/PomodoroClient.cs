@@ -6,7 +6,6 @@ using System.IO;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace Client
 {
@@ -57,7 +56,7 @@ namespace Client
             {
                 if (!token.IsCancellationRequested)
                 {
-                    OnMessageReceived?.Invoke($"Помилка з'єднання: {ex.Message}");
+                    OnMessageReceived?.Invoke(ex.Message);
                 }
             }
         }
@@ -67,17 +66,15 @@ namespace Client
             switch (message.Type)
             {
                 case MessageType.ShowNotification:
-                    string notif = message.Payload ?? string.Empty;
-                    OnNotificationReceived?.Invoke(notif);
+                    OnNotificationReceived?.Invoke(message.Payload ?? string.Empty);
                     break;
 
                 case MessageType.ErrorResponce:
-                    OnMessageReceived?.Invoke($"Помилка від сервера: {message.Payload}");
+                    OnMessageReceived?.Invoke(message.Payload ?? string.Empty);
                     break;
 
                 case MessageType.TimerChangeState:
-                    string state = message.Payload ?? string.Empty;
-                    OnTimerStateChanged?.Invoke(state);
+                    OnTimerStateChanged?.Invoke(message.Payload ?? string.Empty);
                     break;
 
                 case MessageType.TimerTick:
@@ -88,7 +85,7 @@ namespace Client
                     break;
 
                 default:
-                    OnMessageReceived?.Invoke($"Отримано невідомий тип повідомлення від сервера: {message.Payload}");
+                    OnMessageReceived?.Invoke(message.Payload ?? string.Empty);
                     break;
             }
 
@@ -103,10 +100,9 @@ namespace Client
             }
 
             if (_stream == null)
-                throw new InvalidOperationException("Клієнт не підключений до сервера.");
+                throw new InvalidOperationException();
         }
 
-        
         public async Task StartPomodoroAsync(int pomodoroDuration, int shortBreak, int longBreak, int sessions)
         {
             await EnsureConnectedAsync();
@@ -121,7 +117,6 @@ namespace Client
             await NetworkHelper.WriteExactAsync(_stream!, MessageType.StartPomodoro, settingsDto);
         }
 
-        
         public async Task SaveSettingsAsync(int pomodoroDuration, int shortBreak, int longBreak, int sessions)
         {
             await EnsureConnectedAsync();
