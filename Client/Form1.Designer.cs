@@ -57,7 +57,7 @@
             btnStop.TabIndex = 1;
             btnStop.Text = "Стоп";
             btnStop.UseVisualStyleBackColor = true;
-            btnStop.Click += btnStop_Click;
+            this.btnStop.Click += new System.EventHandler(this.btnStop_Click);
             // 
             // lblTimer
             // 
@@ -91,7 +91,7 @@
             btnSaveSettings.TabIndex = 6;
             btnSaveSettings.Text = "Зберегти налаштування";
             btnSaveSettings.UseVisualStyleBackColor = true;
-            btnSaveSettings.Click += btnSaveSettings_Click;
+            this.btnSaveSettings.Click += new System.EventHandler(this.btnSaveSettings_Click);
             // 
             // lblStatus
             // 
