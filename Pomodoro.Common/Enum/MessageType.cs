@@ -12,11 +12,14 @@ namespace Pomodoro.Common.Enum
         PausePomodoro = 103,
         SaveSettings = 104,
         GetSettings = 105,
+        AuthorizeRequest = 106,
+
 
         
         // Server
         ShowNotification = 201,
         ErrorResponce = 202,
+        AuthorizeAnswer = 203,
 
         // Timer
         TimerChangeState = 301,

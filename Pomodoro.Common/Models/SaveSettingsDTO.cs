@@ -6,7 +6,7 @@ namespace Pomodoro.Common.Models
 {
     public class SaveSettingsDTO
     {
+        public string Login { get; set; }
         public PomodoroSettingsDTO PomodoroSettings { get; set; }
-        public int UserId { get; set; }
     }
 }
