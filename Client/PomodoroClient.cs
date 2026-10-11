@@ -124,13 +124,19 @@ namespace Client
         {
             await EnsureConnectedAsync();
 
-            var settingsDto = new PomodoroSettingsDTO
+            var settingsDto = new SaveSettingsDTO
             {
-                PomodoroDuration = pomodoroDuration,
-                ShortBreak = shortBreak,
-                LongBreak = longBreak
-            };
+                // ТУТ должey быть логин!
+                // ...
 
+                PomodoroSettings = new PomodoroSettingsDTO
+                {
+                    PomodoroDuration = pomodoroDuration,
+                    ShortBreak = shortBreak,
+                    LongBreak = longBreak,
+                    CountPomodoroBeforeLongBreak = sessions
+                }
+            };
             
             await NetworkHelper.WriteExactAsync(_stream!, MessageType.SaveSettings, settingsDto);
         }
