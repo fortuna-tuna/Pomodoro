@@ -96,8 +96,10 @@ namespace Server
             {
                 case MessageType.StartPomodoro:
                     var pomodoroSettings = NetworkSerializer.DeserializePayload<PomodoroSettingsDTO>(message.Payload);
+
                     _timer.UpdateSettings(pomodoroSettings);
                     _ = _timer.Start(TimerStates.Working);
+
                     break;
                 case MessageType.StopPomodoro:
                     await dbContext.Statistics.AddAsync(new Statistic { TotalCompletePomodoros = _countCompletePomodoros, Day = DateTime.Now.Date});
@@ -105,11 +107,17 @@ namespace Server
 
                     _countCompletePomodoros = 0;
                     _timer.Stop();
+
                     break;
                 case MessageType.SaveSettings:
                     var userSettings = NetworkSerializer.DeserializePayload<SaveSettingsDTO>(message.Payload);
-                    await SaveSettingsToDatabase(userSettings);
-                    await SendNotificationAsync(client, "Save settings success");
+                    bool success = await SaveSettingsToDatabase(userSettings);
+
+                    if (success)  
+                        await SendNotificationAsync(client, "Save settings success!");
+                    else
+                        await SendNotificationAsync(client, "Save settings failed!");
+
                     break;
                 case MessageType.GetSettings:
                     var userRequest = NetworkSerializer.DeserializePayload<GetSettingsDTO>(message.Payload);
@@ -124,6 +132,7 @@ namespace Server
                     {
                         await SendNotificationAsync(client, "Default settings were applied.");
                     }
+
                     break;
             }
         }
@@ -190,10 +199,14 @@ namespace Server
                 Console.WriteLine($"Notification error. {ex}");
             }
         }
-        private async Task SaveSettingsToDatabase(SaveSettingsDTO userSettings)
+        private async Task<bool> SaveSettingsToDatabase(SaveSettingsDTO userSettings)
         {
             using PomodoroDbContext dbContext = new();
-            var res = await dbContext.PomodoroSettings.Where(ps => ps.UserProfileId == userSettings.UserId).FirstOrDefaultAsync();
+
+            var profile = await dbContext.UserProfiles.FirstOrDefaultAsync(up => up.Login == userSettings.Login);
+            if (profile == null) return false;
+
+            var res = await dbContext.PomodoroSettings.Where(ps => ps.UserProfileId == profile.Id).FirstOrDefaultAsync();
             if (res != null)
             {
                 res.PomodoroDuration = userSettings.PomodoroSettings.PomodoroDuration;
@@ -205,7 +218,7 @@ namespace Server
             {
                 await dbContext.PomodoroSettings.AddAsync(new PomodoroSettings
                 {
-                    UserProfileId = userSettings.UserId,
+                    UserProfileId = profile.Id,
                     PomodoroDuration = userSettings.PomodoroSettings.PomodoroDuration,
                     ShortBreak = userSettings.PomodoroSettings.ShortBreak,
                     LongBreak = userSettings.PomodoroSettings.LongBreak,
@@ -214,6 +227,7 @@ namespace Server
             }
             
             await dbContext.SaveChangesAsync();
+            return true;
         }
 
         private async Task<(GetSettingsDTO Settings, bool IsFirstTime)> GetOrInitializeSettings(TcpClient client, string login)
