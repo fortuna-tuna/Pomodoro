@@ -30,7 +30,7 @@ namespace Client
             };
 
             _pomodoroClient.OnTimerStateChanged += (state) => {
-                UpdateStatus($"Стан таймера: {state}");
+                UpdateStatus($"Стан: {state}");
             };
 
             _ = ConnectToServerAsync();
@@ -77,7 +77,7 @@ namespace Client
                 int longBreak = (int)numLongBreak.Value;
                 int sessions = (int)numSessions.Value;
 
-                await _pomodoroClient.SendSettingsAsync(workTime, shortBreak, longBreak, sessions);
+                await _pomodoroClient.StartPomodoroAsync(workTime, shortBreak, longBreak, sessions);
             }
             catch (Exception ex)
             {
@@ -107,18 +107,13 @@ namespace Client
                 int longBreak = (int)numLongBreak.Value;
                 int sessions = (int)numSessions.Value;
 
-                await _pomodoroClient.SendSettingsAsync(workTime, shortBreak, longBreak, sessions);
-                MessageBox.Show("Налаштування успішно надіслано на сервер!", "Успіх", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                await _pomodoroClient.SaveSettingsAsync(workTime, shortBreak, longBreak, sessions);
+                MessageBox.Show("Налаштування успішно збережено на сервері!", "Успіх", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Помилка збереження: {ex.Message}", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
-        
-        private void btnStart_Click_1(object sender, EventArgs e) => btnStart_Click(sender, e);
-        private void btnStop_Click_1(object sender, EventArgs e) => btnStop_Click(sender, e);
-        private void btnSaveSettings_Click_1(object sender, EventArgs e) => btnSaveSettings_Click(sender, e);
     }
 }

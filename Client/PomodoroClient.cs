@@ -24,6 +24,9 @@ namespace Client
 
         public async Task ConnectAsync(string ipAddress, int port)
         {
+            if (_isConnected && _tcpClient != null && _tcpClient.Connected)
+                return;
+
             _tcpClient = new TcpClient();
             await _tcpClient.ConnectAsync(ipAddress, port);
             _stream = _tcpClient.GetStream();
@@ -63,8 +66,9 @@ namespace Client
             switch (message.Type)
             {
                 case MessageType.ShowNotification:
-                    OnNotificationReceived?.Invoke(message.Payload);
-                    MessageBox.Show(message.Payload, "Сповіщення сервера", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    string notif = message.Payload ?? string.Empty;
+                    OnNotificationReceived?.Invoke(notif);
+                    MessageBox.Show(notif, "Сповіщення сервера", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     break;
 
                 case MessageType.ErrorResponce:
@@ -72,7 +76,8 @@ namespace Client
                     break;
 
                 case MessageType.TimerChangeState:
-                    OnTimerStateChanged?.Invoke(message.Payload);
+                    string state = message.Payload ?? string.Empty;
+                    OnTimerStateChanged?.Invoke(state);
                     break;
 
                 case MessageType.TimerTick:
@@ -90,8 +95,22 @@ namespace Client
             return Task.CompletedTask;
         }
 
-        public async Task SendSettingsAsync(int pomodoroDuration, int shortBreak, int longBreak, int sessions)
+        private async Task EnsureConnectedAsync()
         {
+            if (!_isConnected || _tcpClient == null || !_tcpClient.Connected)
+            {
+                await ConnectAsync("127.0.0.1", 1234);
+            }
+
+            if (_stream == null)
+                throw new InvalidOperationException("Клієнт не підключений до сервера.");
+        }
+
+        
+        public async Task StartPomodoroAsync(int pomodoroDuration, int shortBreak, int longBreak, int sessions)
+        {
+            await EnsureConnectedAsync();
+
             var settingsDto = new PomodoroSettingsDTO
             {
                 PomodoroDuration = pomodoroDuration,
@@ -99,10 +118,23 @@ namespace Client
                 LongBreak = longBreak
             };
 
-            if (_stream == null || !_isConnected)
-                throw new InvalidOperationException("Клієнт не підключений до сервера.");
+            await NetworkHelper.WriteExactAsync(_stream!, MessageType.StartPomodoro, settingsDto);
+        }
 
-            await NetworkHelper.WriteExactAsync(_stream, MessageType.StartPomodoro, settingsDto);
+        
+        public async Task SaveSettingsAsync(int pomodoroDuration, int shortBreak, int longBreak, int sessions)
+        {
+            await EnsureConnectedAsync();
+
+            var settingsDto = new PomodoroSettingsDTO
+            {
+                PomodoroDuration = pomodoroDuration,
+                ShortBreak = shortBreak,
+                LongBreak = longBreak
+            };
+
+            
+            await NetworkHelper.WriteExactAsync(_stream!, MessageType.SaveSettings, settingsDto);
         }
 
         public void Disconnect()
