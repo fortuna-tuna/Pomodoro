@@ -81,10 +81,8 @@ namespace Client
                     break;
 
                 case MessageType.TimerTick:
-                    if (int.TryParse(message.Payload, out int remainingSeconds))
-                    {
-                        OnTick?.Invoke(remainingSeconds);
-                    }
+                    var res = NetworkSerializer.DeserializePayload<TimerTickDTO>(message.Payload);
+                    OnTick?.Invoke(res.RemainingSeconds);
                     break;
 
                 default:

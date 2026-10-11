@@ -65,7 +65,8 @@ namespace Client
         {
             int minutes = totalSeconds / 60;
             int seconds = totalSeconds % 60;
-            lblStatus.Text = $"Час: {minutes:D2}:{seconds:D2}";
+
+            Invoke(() => lblTimer.Text = $"{minutes}:{seconds}");
         }
 
         private async void btnStart_Click(object sender, EventArgs e)

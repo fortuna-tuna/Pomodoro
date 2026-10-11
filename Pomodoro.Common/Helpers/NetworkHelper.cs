@@ -1,22 +1,38 @@
 ﻿using Pomodoro.Common.Enum;
 using Pomodoro.Common.Models;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
-
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Pomodoro.Common.Helpers
 {
     public static class NetworkHelper
     {
+        private static readonly ConcurrentDictionary<Stream, SemaphoreSlim> _streamLocks = new();
         public static async Task WriteExactAsync<T>(Stream stream, MessageType type, T payload)
         {
-            var message = NetworkSerializer.SerializeMessage(type, payload);
-            byte[] length = BitConverter.GetBytes(message.Length);
+            var semaphore = _streamLocks.GetOrAdd(stream, _ => new SemaphoreSlim(1, 1));
 
-            await stream.WriteAsync(length, 0, length.Length);
-            await stream.WriteAsync(message, 0, message.Length);
+            await semaphore.WaitAsync();
+
+            try
+            {
+                var message = NetworkSerializer.SerializeMessage(type, payload);
+                byte[] length = BitConverter.GetBytes(message.Length);
+
+                await stream.WriteAsync(length, 0, length.Length);
+                await stream.WriteAsync(message, 0, message.Length);
+            }
+            finally
+            {
+                semaphore.Release();
+            }
         }
+
         public static async Task<byte[]> ReadDataAsync(Stream stream, CancellationToken token)
         {
             var lengthBuffer = new byte[4];
@@ -29,16 +45,17 @@ namespace Pomodoro.Common.Helpers
 
             return buf;
         }
-       private static async Task<int> ReadExactAsync(Stream stream, byte[] buffer, int offset, int count, CancellationToken ct = default)
-       {
-                int totalBytesRead = 0;
-                while (totalBytesRead < count)
-                {
-                    int bytesRead = await stream.ReadAsync(buffer, offset + totalBytesRead, count - totalBytesRead, ct);
-                    if (bytesRead == 0) return totalBytesRead; 
-                    totalBytesRead += bytesRead;
-                }
-                return totalBytesRead;
-       }
+
+        private static async Task<int> ReadExactAsync(Stream stream, byte[] buffer, int offset, int count, CancellationToken ct = default)
+        {
+            int totalBytesRead = 0;
+            while (totalBytesRead < count)
+            {
+                int bytesRead = await stream.ReadAsync(buffer, offset + totalBytesRead, count - totalBytesRead, ct);
+                if (bytesRead == 0) return totalBytesRead;
+                totalBytesRead += bytesRead;
+            }
+            return totalBytesRead;
+        }
     }
 }
