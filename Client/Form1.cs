@@ -15,11 +15,12 @@ namespace Client
             _pomodoroClient = new PomodoroClient();
 
             
+            SetSettingsAccess(false);
+
             _pomodoroClient.OnMessageReceived += (message) => {
                 UpdateStatus(message);
             };
 
-            
             _pomodoroClient.OnTick += (remainingSeconds) => {
                 if (this.InvokeRequired)
                 {
@@ -31,12 +32,10 @@ namespace Client
                 }
             };
 
-            
             _pomodoroClient.OnTimerStateChanged += (state) => {
                 UpdateStatus($"Стан: {state}");
             };
 
-            
             _pomodoroClient.OnNotificationReceived += (notification) => {
                 if (this.InvokeRequired)
                 {
@@ -48,6 +47,18 @@ namespace Client
                 }
             };
 
+            
+            _pomodoroClient.OnAuthorized += (isSuccess) => {
+                if (this.InvokeRequired)
+                {
+                    this.Invoke(new Action(() => HandleAuthResult(isSuccess)));
+                }
+                else
+                {
+                    HandleAuthResult(isSuccess);
+                }
+            };
+
             _ = ConnectToServerAsync();
         }
 
@@ -56,11 +67,11 @@ namespace Client
             try
             {
                 await _pomodoroClient.ConnectAsync("127.0.0.1", 1234);
-                UpdateStatus("Статус: Підключено до сервера");
+                UpdateStatus("Статус: Підключено до сервера. Будь ласка, увійдіть.");
             }
             catch (Exception)
             {
-                UpdateStatus("Статус: Очікування підключення");
+                UpdateStatus("Статус: Очікування підключення...");
             }
         }
 
@@ -83,6 +94,53 @@ namespace Client
             lblStatus.Text = $"Час: {minutes:D2}:{seconds:D2}";
         }
 
+        
+        private void SetSettingsAccess(bool allowed)
+        {
+            numWorkDuration.Enabled = allowed;
+            numShortBreak.Enabled = allowed;
+            numLongBreak.Enabled = allowed;
+            numSessions.Enabled = allowed;
+            btnSaveSettings.Enabled = allowed;
+        }
+
+        
+        private void HandleAuthResult(bool isSuccess)
+        {
+            if (isSuccess)
+            {
+                MessageBox.Show("Успішний вхід!", "Авторизація", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                SetSettingsAccess(true); 
+            }
+            else
+            {
+                MessageBox.Show("Невірний логін або пароль!", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                SetSettingsAccess(false); 
+            }
+        }
+
+        
+        private async void btnLogin_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string login = txtLogin.Text.Trim();
+                string password = txtPassword.Text;
+
+                if (string.IsNullOrEmpty(login) || string.IsNullOrEmpty(password))
+                {
+                    MessageBox.Show("Введіть логін та пароль!");
+                    return;
+                }
+
+                await _pomodoroClient.AuthorizeAsync(login, password);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Помилка: {ex.Message}");
+            }
+        }
+
         private async void btnStart_Click(object sender, EventArgs e)
         {
             try
@@ -96,7 +154,7 @@ namespace Client
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Помилка старту: {ex.Message}", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Помилка старту: {ex.Message}");
             }
         }
 
@@ -106,10 +164,11 @@ namespace Client
             {
                 _pomodoroClient.Disconnect();
                 UpdateStatus("Статус: Зупинено");
+                SetSettingsAccess(false);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Помилка зупинки: {ex.Message}", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Помилка зупинки: {ex.Message}");
             }
         }
 
@@ -122,13 +181,11 @@ namespace Client
                 int longBreak = (int)numLongBreak.Value;
                 int sessions = (int)numSessions.Value;
 
-                
                 await _pomodoroClient.SaveSettingsAsync(workTime, shortBreak, longBreak, sessions);
-                UpdateStatus("Статус: Налаштування надіслано на сервер");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Помилка збереження: {ex.Message}", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Помилка збереження: {ex.Message}");
             }
         }
     }

@@ -33,6 +33,11 @@
             numSessions = new NumericUpDown();
             label3 = new Label();
             label4 = new Label();
+            txtLogin = new TextBox();
+            txtPassword = new TextBox();
+            label5 = new Label();
+            label6 = new Label();
+            btnLogin = new Button();
             ((System.ComponentModel.ISupportInitialize)numWorkDuration).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numShortBreak).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numLongBreak).BeginInit();
@@ -47,23 +52,23 @@
             btnStart.TabIndex = 0;
             btnStart.Text = "Старт";
             btnStart.UseVisualStyleBackColor = true;
-            this.btnStart.Click += btnStart_Click;
+            btnStart.Click += btnStart_Click;
             // 
             // btnStop
             // 
-            btnStop.Location = new Point(330, 129);
+            btnStop.Location = new Point(243, 129);
             btnStop.Name = "btnStop";
             btnStop.Size = new Size(94, 29);
             btnStop.TabIndex = 1;
             btnStop.Text = "Стоп";
             btnStop.UseVisualStyleBackColor = true;
-            this.btnStop.Click += new System.EventHandler(this.btnStop_Click);
+            btnStop.Click += btnStop_Click;
             // 
             // lblTimer
             // 
             lblTimer.AutoSize = true;
             lblTimer.Font = new Font("Segoe UI", 28F);
-            lblTimer.Location = new Point(330, 9);
+            lblTimer.Location = new Point(178, 9);
             lblTimer.Name = "lblTimer";
             lblTimer.Size = new Size(137, 62);
             lblTimer.TabIndex = 3;
@@ -71,32 +76,32 @@
             // 
             // numWorkDuration
             // 
-            numWorkDuration.Location = new Point(91, 242);
+            numWorkDuration.Location = new Point(49, 191);
             numWorkDuration.Name = "numWorkDuration";
             numWorkDuration.Size = new Size(150, 27);
             numWorkDuration.TabIndex = 4;
             // 
             // numShortBreak
             // 
-            numShortBreak.Location = new Point(495, 242);
+            numShortBreak.Location = new Point(435, 191);
             numShortBreak.Name = "numShortBreak";
             numShortBreak.Size = new Size(150, 27);
             numShortBreak.TabIndex = 5;
             // 
             // btnSaveSettings
             // 
-            btnSaveSettings.Location = new Point(536, 129);
+            btnSaveSettings.Location = new Point(417, 129);
             btnSaveSettings.Name = "btnSaveSettings";
             btnSaveSettings.Size = new Size(200, 29);
             btnSaveSettings.TabIndex = 6;
             btnSaveSettings.Text = "Зберегти налаштування";
             btnSaveSettings.UseVisualStyleBackColor = true;
-            this.btnSaveSettings.Click += new System.EventHandler(this.btnSaveSettings_Click);
+            btnSaveSettings.Click += btnSaveSettings_Click;
             // 
             // lblStatus
             // 
             lblStatus.AutoSize = true;
-            lblStatus.Location = new Point(282, 71);
+            lblStatus.Location = new Point(139, 71);
             lblStatus.Name = "lblStatus";
             lblStatus.Size = new Size(232, 20);
             lblStatus.TabIndex = 7;
@@ -105,7 +110,7 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(102, 284);
+            label1.Location = new Point(78, 242);
             label1.Name = "label1";
             label1.Size = new Size(87, 20);
             label1.TabIndex = 8;
@@ -114,7 +119,7 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(495, 284);
+            label2.Location = new Point(435, 231);
             label2.Name = "label2";
             label2.Size = new Size(138, 20);
             label2.TabIndex = 9;
@@ -122,14 +127,14 @@
             // 
             // numLongBreak
             // 
-            numLongBreak.Location = new Point(95, 329);
+            numLongBreak.Location = new Point(49, 284);
             numLongBreak.Name = "numLongBreak";
             numLongBreak.Size = new Size(150, 27);
             numLongBreak.TabIndex = 10;
             // 
             // numSessions
             // 
-            numSessions.Location = new Point(495, 329);
+            numSessions.Location = new Point(435, 284);
             numSessions.Name = "numSessions";
             numSessions.Size = new Size(150, 27);
             numSessions.TabIndex = 11;
@@ -137,7 +142,7 @@
             // label3
             // 
             label3.AutoSize = true;
-            label3.Location = new Point(96, 376);
+            label3.Location = new Point(50, 336);
             label3.Name = "label3";
             label3.Size = new Size(122, 20);
             label3.TabIndex = 12;
@@ -146,17 +151,64 @@
             // label4
             // 
             label4.AutoSize = true;
-            label4.Location = new Point(492, 371);
+            label4.Location = new Point(435, 336);
             label4.Name = "label4";
             label4.Size = new Size(159, 20);
             label4.TabIndex = 13;
             label4.Text = "Сесій до довгої паузи";
             // 
+            // txtLogin
+            // 
+            txtLogin.Location = new Point(772, 131);
+            txtLogin.Name = "txtLogin";
+            txtLogin.Size = new Size(125, 27);
+            txtLogin.TabIndex = 14;
+            // 
+            // txtPassword
+            // 
+            txtPassword.Location = new Point(772, 208);
+            txtPassword.Name = "txtPassword";
+            txtPassword.PasswordChar = '*';
+            txtPassword.Size = new Size(125, 27);
+            txtPassword.TabIndex = 15;
+            // 
+            // label5
+            // 
+            label5.AutoSize = true;
+            label5.Location = new Point(807, 108);
+            label5.Name = "label5";
+            label5.Size = new Size(47, 20);
+            label5.TabIndex = 16;
+            label5.Text = "Логін";
+            // 
+            // label6
+            // 
+            label6.AutoSize = true;
+            label6.Location = new Point(803, 185);
+            label6.Name = "label6";
+            label6.Size = new Size(62, 20);
+            label6.TabIndex = 17;
+            label6.Text = "Пароль";
+            // 
+            // btnLogin
+            // 
+            btnLogin.Location = new Point(785, 263);
+            btnLogin.Name = "btnLogin";
+            btnLogin.Size = new Size(94, 29);
+            btnLogin.TabIndex = 18;
+            btnLogin.Text = "Увійти";
+            btnLogin.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
+            ClientSize = new Size(1227, 643);
+            Controls.Add(btnLogin);
+            Controls.Add(label6);
+            Controls.Add(label5);
+            Controls.Add(txtPassword);
+            Controls.Add(txtLogin);
             Controls.Add(label4);
             Controls.Add(label3);
             Controls.Add(numSessions);
@@ -195,5 +247,10 @@
         private NumericUpDown numSessions;
         private Label label3;
         private Label label4;
+        private TextBox txtLogin;
+        private TextBox txtPassword;
+        private Label label5;
+        private Label label6;
+        private Button btnLogin;
     }
 }
