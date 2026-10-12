@@ -10,6 +10,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Net.WebSockets;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client;
 
 namespace Server
 {
@@ -120,8 +121,8 @@ namespace Server
 
                     break;
                 case MessageType.GetSettings:
-                    var userRequest = NetworkSerializer.DeserializePayload<GetSettingsDTO>(message.Payload);
-                    var (settings, isFirstTime) = await GetOrInitializeSettings(client, userRequest.Login);
+                    var profileSettings = NetworkSerializer.DeserializePayload<GetSettingsDTO>(message.Payload);
+                    var (settings, isFirstTime) = await GetOrInitializeSettings(client, profileSettings.Login);
 
                     await NetworkHelper.WriteExactAsync(client.GetStream(), MessageType.GetSettings, settings);
 
@@ -134,7 +135,52 @@ namespace Server
                     }
 
                     break;
+                case MessageType.AuthorizeRequest:
+                    var userRequest = NetworkSerializer.DeserializePayload<AuthorizeRequestDTO>(message.Payload);
+                    await UserAuthorization(client, userRequest);
+
+                    break;
             }
+        }
+
+        private async Task UserAuthorization(TcpClient client, AuthorizeRequestDTO? userRequest)
+        {
+            using PomodoroDbContext dbContext = new();
+
+            var res = await dbContext.UserProfiles
+                .Include(up => up.Settings)
+                .FirstOrDefaultAsync(up => up.Login == userRequest.Login && up.Password == userRequest.Password);
+
+            if (res == null)
+            {
+                await SendNotificationAsync(client, "Authorization failed!");
+
+                var answer = new AuthorizeAnswerDTO
+                {
+                    IsSuccess = false,
+                    profileSettings = _defaultSettings
+                };
+
+                await NetworkHelper.WriteExactAsync(client.GetStream(), MessageType.AuthorizeAnswer, answer);
+            } else
+            {
+                await SendNotificationAsync(client, "Authorize success!");
+
+                var answer = new AuthorizeAnswerDTO
+                {
+                    IsSuccess = true,
+                    profileSettings = new PomodoroSettingsDTO
+                    {
+                        PomodoroDuration = res.Settings?.PomodoroDuration ?? _defaultSettings.PomodoroDuration,
+                        ShortBreak = res.Settings?.ShortBreak ?? _defaultSettings.ShortBreak,
+                        LongBreak = res.Settings?.LongBreak ?? _defaultSettings.LongBreak,
+                        CountPomodoroBeforeLongBreak = res.Settings?.CountPomodoroBeforeLongBreak ?? _defaultSettings.CountPomodoroBeforeLongBreak
+                    }
+                };
+
+                await NetworkHelper.WriteExactAsync(client.GetStream(), MessageType.AuthorizeAnswer, answer);
+            }
+
         }
 
         private async Task SendStateAsync(TcpClient client, TimerStates state)
