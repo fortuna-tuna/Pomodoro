@@ -6,7 +6,6 @@ using System.IO;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using Pomodoro.Common.Models;
 
 namespace Client
 {
@@ -25,6 +24,7 @@ namespace Client
 
         
         public event Action<bool>? OnAuthorized;
+        public event Action<PomodoroSettingsDTO>? OnSettingsReceived;
 
         public async Task ConnectAsync(string ipAddress, int port)
         {
@@ -87,6 +87,14 @@ namespace Client
                     }
                     break;
 
+                case MessageType.GetSettings: 
+                    var settings = NetworkSerializer.DeserializePayload<PomodoroSettingsDTO>(message.Payload);
+                    if (settings != null)
+                    {
+                        OnSettingsReceived?.Invoke(settings);
+                    }
+                    break;
+
                 case MessageType.TimerChangeState:
                     OnTimerStateChanged?.Invoke(message.Payload ?? string.Empty);
                     break;
@@ -117,20 +125,19 @@ namespace Client
                 throw new InvalidOperationException();
         }
 
-        
         public async Task AuthorizeAsync(string login, string password)
         {
             await EnsureConnectedAsync();
 
-           
             var authRequest = new AuthorizeRequestDTO
             {
                 Login = login,
-                Passwords = password
+                Password = password
             };
 
             await NetworkHelper.WriteExactAsync(_stream!, MessageType.AuthorizeRequest, authRequest);
         }
+
         public async Task StartPomodoroAsync(int pomodoroDuration, int shortBreak, int longBreak, int sessions)
         {
             await EnsureConnectedAsync();
@@ -139,13 +146,13 @@ namespace Client
             {
                 PomodoroDuration = pomodoroDuration,
                 ShortBreak = shortBreak,
-                LongBreak = longBreak
+                LongBreak = longBreak,
+                CountPomodoroBeforeLongBreak = sessions
             };
 
             await NetworkHelper.WriteExactAsync(_stream!, MessageType.StartPomodoro, settingsDto);
         }
 
-        
         public async Task SaveSettingsAsync(int pomodoroDuration, int shortBreak, int longBreak, int sessions)
         {
             await EnsureConnectedAsync();
@@ -154,7 +161,8 @@ namespace Client
             {
                 PomodoroDuration = pomodoroDuration,
                 ShortBreak = shortBreak,
-                LongBreak = longBreak
+                LongBreak = longBreak,
+                CountPomodoroBeforeLongBreak = sessions
             };
 
             await NetworkHelper.WriteExactAsync(_stream!, MessageType.SaveSettings, settingsDto);

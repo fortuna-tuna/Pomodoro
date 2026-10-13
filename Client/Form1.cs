@@ -1,6 +1,7 @@
 using System;
 using System.Windows.Forms;
 using System.Threading.Tasks;
+using Pomodoro.Common.Models;
 
 namespace Client
 {
@@ -14,7 +15,7 @@ namespace Client
 
             _pomodoroClient = new PomodoroClient();
 
-            
+           
             SetSettingsAccess(false);
 
             _pomodoroClient.OnMessageReceived += (message) => {
@@ -59,6 +60,18 @@ namespace Client
                 }
             };
 
+           
+            _pomodoroClient.OnSettingsReceived += (settings) => {
+                if (this.InvokeRequired)
+                {
+                    this.Invoke(new Action(() => ApplySettingsToUI(settings)));
+                }
+                else
+                {
+                    ApplySettingsToUI(settings);
+                }
+            };
+
             _ = ConnectToServerAsync();
         }
 
@@ -94,7 +107,6 @@ namespace Client
             lblStatus.Text = $"Час: {minutes:D2}:{seconds:D2}";
         }
 
-        
         private void SetSettingsAccess(bool allowed)
         {
             numWorkDuration.Enabled = allowed;
@@ -104,7 +116,6 @@ namespace Client
             btnSaveSettings.Enabled = allowed;
         }
 
-        
         private void HandleAuthResult(bool isSuccess)
         {
             if (isSuccess)
@@ -115,11 +126,18 @@ namespace Client
             else
             {
                 MessageBox.Show("Невірний логін або пароль!", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                SetSettingsAccess(false); 
+                SetSettingsAccess(false);
             }
         }
 
-        
+        private void ApplySettingsToUI(PomodoroSettingsDTO settings)
+        {
+            numWorkDuration.Value = Math.Clamp(settings.PomodoroDuration, numWorkDuration.Minimum, numWorkDuration.Maximum);
+            numShortBreak.Value = Math.Clamp(settings.ShortBreak, numShortBreak.Minimum, numShortBreak.Maximum);
+            numLongBreak.Value = Math.Clamp(settings.LongBreak, numLongBreak.Minimum, numLongBreak.Maximum);
+            numSessions.Value = Math.Clamp(settings.CountPomodoroBeforeLongBreak, numSessions.Minimum, numSessions.Maximum);
+        }
+
         private async void btnLogin_Click(object sender, EventArgs e)
         {
             try
