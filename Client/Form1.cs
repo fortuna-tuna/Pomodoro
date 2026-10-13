@@ -15,36 +15,17 @@ namespace Client
 
             _pomodoroClient = new PomodoroClient();
 
-           
             SetSettingsAccess(false);
 
-            _pomodoroClient.OnMessageReceived += (message) => {
-                UpdateStatus(message);
-            };
-
-            _pomodoroClient.OnTick += (remainingSeconds) => {
-                if (this.InvokeRequired)
-                {
-                    this.Invoke(new Action(() => FormatAndDisplayTime(remainingSeconds)));
-                }
-                else
-                {
-                    FormatAndDisplayTime(remainingSeconds);
-                }
-            };
-
+           
             _pomodoroClient.OnTimerStateChanged += (state) => {
-                UpdateStatus($"Стан: {state}");
-            };
-
-            _pomodoroClient.OnNotificationReceived += (notification) => {
                 if (this.InvokeRequired)
                 {
-                    this.Invoke(new Action(() => MessageBox.Show(notification, "Сповіщення сервера", MessageBoxButtons.OK, MessageBoxIcon.Information)));
+                    this.Invoke(new Action(() => UpdateStatus($"Стан: {state}")));
                 }
                 else
                 {
-                    MessageBox.Show(notification, "Сповіщення сервера", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    UpdateStatus($"Стан: {state}");
                 }
             };
 
@@ -60,7 +41,7 @@ namespace Client
                 }
             };
 
-           
+            
             _pomodoroClient.OnSettingsReceived += (settings) => {
                 if (this.InvokeRequired)
                 {
@@ -100,13 +81,6 @@ namespace Client
             }
         }
 
-        private void FormatAndDisplayTime(int totalSeconds)
-        {
-            int minutes = totalSeconds / 60;
-            int seconds = totalSeconds % 60;
-            lblStatus.Text = $"Час: {minutes:D2}:{seconds:D2}";
-        }
-
         private void SetSettingsAccess(bool allowed)
         {
             numWorkDuration.Enabled = allowed;
@@ -120,12 +94,13 @@ namespace Client
         {
             if (isSuccess)
             {
-                SetSettingsAccess(true); 
+                SetSettingsAccess(true);
+                MessageBox.Show("Успішний вхід!", "Авторизація", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             else
             {
                 MessageBox.Show("Невірний логін або пароль!", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                SetSettingsAccess(false); 
+                SetSettingsAccess(false);
             }
         }
 
@@ -151,7 +126,6 @@ namespace Client
                 }
 
                 await _pomodoroClient.AuthorizeAsync(login, password);
-
             }
             catch (Exception ex)
             {
@@ -168,7 +142,8 @@ namespace Client
                 int longBreak = (int)numLongBreak.Value;
                 int sessions = (int)numSessions.Value;
 
-                await _pomodoroClient.StartPomodoroAsync(workTime, shortBreak, longBreak, sessions);
+                
+                await _pomodoroClient.SaveSettingsAsync(workTime, shortBreak, longBreak, sessions);
             }
             catch (Exception ex)
             {
@@ -199,10 +174,15 @@ namespace Client
                 int longBreak = (int)numLongBreak.Value;
                 int sessions = (int)numSessions.Value;
 
-                if (_pomodoroClient.Login != null)
-                    await _pomodoroClient.SaveSettingsAsync(_pomodoroClient.Login, workTime, shortBreak, longBreak, sessions);
+                if (_pomodoroClient != null)
+                {
+                    await _pomodoroClient.SaveSettingsAsync(workTime, shortBreak, longBreak, sessions);
+                    MessageBox.Show("Налаштування збережено!", "Успіх", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
                 else
-                    throw new Exception("Невірний логін");
+                {
+                    throw new Exception("Немає підключення до сервера");
+                }
             }
             catch (Exception ex)
             {
