@@ -120,13 +120,12 @@ namespace Client
         {
             if (isSuccess)
             {
-                MessageBox.Show("Успішний вхід!", "Авторизація", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 SetSettingsAccess(true); 
             }
             else
             {
                 MessageBox.Show("Невірний логін або пароль!", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                SetSettingsAccess(false);
+                SetSettingsAccess(false); 
             }
         }
 
@@ -152,6 +151,7 @@ namespace Client
                 }
 
                 await _pomodoroClient.AuthorizeAsync(login, password);
+
             }
             catch (Exception ex)
             {
@@ -199,7 +199,10 @@ namespace Client
                 int longBreak = (int)numLongBreak.Value;
                 int sessions = (int)numSessions.Value;
 
-                await _pomodoroClient.SaveSettingsAsync(workTime, shortBreak, longBreak, sessions);
+                if (_pomodoroClient.Login != null)
+                    await _pomodoroClient.SaveSettingsAsync(_pomodoroClient.Login, workTime, shortBreak, longBreak, sessions);
+                else
+                    throw new Exception("Невірний логін");
             }
             catch (Exception ex)
             {

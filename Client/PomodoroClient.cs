@@ -15,8 +15,8 @@ namespace Client
         private NetworkStream? _stream;
         private bool _isConnected;
         private CancellationTokenSource? _cts;
+        public string? Login { get; set; }
 
-        
         public event Action<string>? OnMessageReceived;
         public event Action<int>? OnTick;
         public event Action<string>? OnTimerStateChanged;
@@ -84,6 +84,7 @@ namespace Client
                     if (answer != null)
                     {
                         OnAuthorized?.Invoke(answer.IsSuccess);
+                        Login = answer.Login;
                     }
                     break;
 
@@ -127,17 +128,19 @@ namespace Client
 
         public async Task AuthorizeAsync(string login, string password)
         {
-            await EnsureConnectedAsync();
+            try
+            {
+                await EnsureConnectedAsync();
 
+           
             var authRequest = new AuthorizeRequestDTO
             {
                 Login = login,
-                Password = password
+                Passwords = password
             };
 
             await NetworkHelper.WriteExactAsync(_stream!, MessageType.AuthorizeRequest, authRequest);
         }
-
         public async Task StartPomodoroAsync(int pomodoroDuration, int shortBreak, int longBreak, int sessions)
         {
             await EnsureConnectedAsync();
@@ -153,6 +156,7 @@ namespace Client
             await NetworkHelper.WriteExactAsync(_stream!, MessageType.StartPomodoro, settingsDto);
         }
 
+        
         public async Task SaveSettingsAsync(int pomodoroDuration, int shortBreak, int longBreak, int sessions)
         {
             await EnsureConnectedAsync();
@@ -161,11 +165,14 @@ namespace Client
             {
                 PomodoroDuration = pomodoroDuration,
                 ShortBreak = shortBreak,
-                LongBreak = longBreak,
-                CountPomodoroBeforeLongBreak = sessions
+                LongBreak = longBreak
             };
 
-            await NetworkHelper.WriteExactAsync(_stream!, MessageType.SaveSettings, settingsDto);
+                await NetworkHelper.WriteExactAsync(_stream!, MessageType.SaveSettings, settingsDto);
+            } catch (Exception ex)
+            {
+                MessageBox.Show($"Save settings error. {ex}");
+            }
         }
 
         public void Disconnect()
