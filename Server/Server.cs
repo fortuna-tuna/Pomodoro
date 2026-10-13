@@ -158,6 +158,7 @@ namespace Server
                 var answer = new AuthorizeAnswerDTO
                 {
                     IsSuccess = false,
+                    Login = null,
                     profileSettings = _defaultSettings
                 };
 
@@ -169,6 +170,7 @@ namespace Server
                 var answer = new AuthorizeAnswerDTO
                 {
                     IsSuccess = true,
+                    Login = res.Login,
                     profileSettings = new PomodoroSettingsDTO
                     {
                         PomodoroDuration = res.Settings?.PomodoroDuration ?? _defaultSettings.PomodoroDuration,
