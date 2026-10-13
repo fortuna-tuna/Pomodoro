@@ -198,6 +198,7 @@
             btnLogin.TabIndex = 18;
             btnLogin.Text = "Увійти";
             btnLogin.UseVisualStyleBackColor = true;
+            btnLogin.Click += btnLogin_Click;
             // 
             // Form1
             // 

@@ -16,8 +16,8 @@ namespace Client
         private NetworkStream? _stream;
         private bool _isConnected;
         private CancellationTokenSource? _cts;
+        public string? Login { get; set; }
 
-        
         public event Action<string>? OnMessageReceived;
         public event Action<int>? OnTick;
         public event Action<string>? OnTimerStateChanged;
@@ -84,6 +84,7 @@ namespace Client
                     if (answer != null)
                     {
                         OnAuthorized?.Invoke(answer.IsSuccess);
+                        Login = answer.Login;
                     }
                     break;
 
@@ -120,16 +121,22 @@ namespace Client
         
         public async Task AuthorizeAsync(string login, string password)
         {
-            await EnsureConnectedAsync();
-
-           
-            var authRequest = new AuthorizeRequestDTO
+            try
             {
-                Login = login,
-                Passwords = password
-            };
+                await EnsureConnectedAsync();
 
-            await NetworkHelper.WriteExactAsync(_stream!, MessageType.AuthorizeRequest, authRequest);
+
+                var authRequest = new AuthorizeRequestDTO
+                {
+                    Login = login,
+                    Password = password
+                };
+
+                await NetworkHelper.WriteExactAsync(_stream!, MessageType.AuthorizeRequest, authRequest);
+            } catch (Exception ex)
+            {
+                MessageBox.Show($"Authorize error. {ex}");
+            }
         }
         public async Task StartPomodoroAsync(int pomodoroDuration, int shortBreak, int longBreak, int sessions)
         {
@@ -146,18 +153,29 @@ namespace Client
         }
 
         
-        public async Task SaveSettingsAsync(int pomodoroDuration, int shortBreak, int longBreak, int sessions)
+        public async Task SaveSettingsAsync(string login, int pomodoroDuration, int shortBreak, int longBreak, int sessions)
         {
-            await EnsureConnectedAsync();
-
-            var settingsDto = new PomodoroSettingsDTO
+            try
             {
-                PomodoroDuration = pomodoroDuration,
-                ShortBreak = shortBreak,
-                LongBreak = longBreak
-            };
+                await EnsureConnectedAsync();
 
-            await NetworkHelper.WriteExactAsync(_stream!, MessageType.SaveSettings, settingsDto);
+                var settingsDto = new SaveSettingsDTO
+                {
+                    Login = login,
+                    PomodoroSettings = new PomodoroSettingsDTO
+                    {
+                        PomodoroDuration = pomodoroDuration,
+                        ShortBreak = shortBreak,
+                        LongBreak = longBreak,
+                        CountPomodoroBeforeLongBreak = sessions
+                    }
+                };
+
+                await NetworkHelper.WriteExactAsync(_stream!, MessageType.SaveSettings, settingsDto);
+            } catch (Exception ex)
+            {
+                MessageBox.Show($"Save settings error. {ex}");
+            }
         }
 
         public void Disconnect()
