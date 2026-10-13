@@ -7,6 +7,7 @@ namespace Pomodoro.Common.Models
     public class AuthorizeAnswerDTO
     {
         public bool IsSuccess { get; set; }
+        public string? Login { get; set; }
         public PomodoroSettingsDTO profileSettings { get; set; }
     }
 }
